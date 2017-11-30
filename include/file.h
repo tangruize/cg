@@ -1,23 +1,33 @@
 #ifndef CG_FILE_H
 #define CG_FILE_H
 
-#include "shape.h"
-
-#include <vector>
+#include <string>
 
 #define FILE_NAME "cg_saved.data"
-extern const char *file_name;
 
-void doSave(std::vector<point> &points,
-            std::vector<thread> &threads,
-            std::vector<triangle> &triangles,
-            std::vector<rectangle> &rectangles,
-            std::vector<circle> &circles);
+class File {
+private:
+    std::string name;
+public:
+    static const int NR_FILE_OP = 2;
+    static const char *const strFileOp[NR_FILE_OP];
+    enum FILE_OP {
+        SAVE, LOAD
+    };
 
-void doLoad(std::vector<point> &points,
-            std::vector<thread> &threads,
-            std::vector<triangle> &triangles,
-            std::vector<rectangle> &rectangles,
-            std::vector<circle> &circles);
+    File(const std::string &n) : name(n) {}
+
+    File() : File(FILE_NAME) {}
+
+    void setFile(const std::string &n) {
+        name = n;
+    }
+
+    void save();
+
+    void load();
+};
+
+extern class File file;
 
 #endif

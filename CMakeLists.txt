@@ -9,16 +9,18 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
-set(SOURCE_FILES src/main.cpp include/window.h
-        src/circle.cpp include/circle.h
+set(SOURCE_FILES src/main.cpp
+        src/window.cpp include/window.h
         src/coordinate.cpp include/coordinate.h
-        src/dda.cpp include/dda.h
+        src/line.cpp include/line.h
         src/display.cpp include/display.h
         src/draw.cpp include/draw.h
         src/file.cpp include/file.h
         src/menu.cpp include/menu.h
         src/mouse.cpp include/mouse.h
-        src/shape.cpp include/shape.h)
+        src/shape.cpp include/shape.h
+        src/keyboard.cpp include/keyboard.h
+        src/ellipse.cpp include/ellipse.h include/color.h src/color.cpp src/fill.cpp include/fill.h)
 
 add_executable(cg ${SOURCE_FILES})
 target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})

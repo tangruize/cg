@@ -1,10 +1,6 @@
-#include "draw.h"
 #include "display.h"
+#include "window.h"
 
-#include <GL/glut.h>
-
-void myDisplay() {
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawAllShapes();
-    glFlush();
+void displayFunc() {
+    win.display();
 }

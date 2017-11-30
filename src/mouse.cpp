@@ -1,111 +1,157 @@
 #include "shape.h"
-#include "draw.h"
 #include "mouse.h"
+#include "window.h"
 
-#include <GL/glut.h>
-#include <math.h>
+static int mouseActive = -1;
+static bool mouseUp = false;
 
-static struct point tmp_point;
-static struct thread tmp_thread;
-static struct triangle tmp_triangle;
-static struct rectangle tmp_rectangle;
-static struct circle tmp_circle;
-
-static int cnt_thread = 0;
-static int cnt_triangle = 0;
-static int cnt_rectangle = 0;
-static int cnt_circle = 0;
-
-void resetCnt() {
-    cnt_thread = 0;
-    cnt_triangle = 0;
-    cnt_rectangle = 0;
-    cnt_circle = 0;
+void mouseReset() {
+    mouseActive = -1;
+    mouseUp = false;
 }
 
-static void casePoint(int x, int y) {
-    tmp_point.color = color;
-    tmp_point.x = x;
-    tmp_point.y = y;
-    drawPoint(tmp_point);
+void mouseClickFunc(int button, int state, int x, int y) {
+    Shape *s;
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_DOWN) {
+            mouseUp = false;
+            switch (Shape::getCurType()) {
+                case Shape::S_POINT:
+                    s = new CurveShape(x, y);
+                    Shape::push(s);
+                    s->draw();
+                    break;
+                case Shape::S_ERASER:
+                    s = new EraserShape(x, y);
+                    Shape::push(s);
+                    s->draw();
+                    break;
+                case Shape::S_ERASER_TOTAL:
+                    s = new EraserTotalShape();
+                    Shape::push(s);
+                    if (((EraserTotalShape *) s)->addErasePos(x, y)) {
+                        s->draw();
+                        win.display();
+                    }
+                    break;
+                case Shape::S_THREAD:
+                    s = new ThreadShape(x, y);
+                    Shape::push(s);
+                    s->draw();
+                    break;
+                case Shape::S_POLYGON:
+                    if (mouseActive == -1) {
+                        s = new PolygonShape();
+                        ((PolygonShape *) s)->addVertex(x, y);
+                        Shape::push(s);
+                        glutDetachMenu(GLUT_RIGHT_BUTTON);
+                    } else if (mouseActive == Shape::S_POLYGON) {
+                        s = Shape::getLastShape();
+                        if (s) {
+                            ((PolygonShape *) s)->addVertex(x, y);
+                            s->drawLast();
+                            win.display();
+                        }
+                    }
+                    break;
+                case Shape::S_CIRCLE:
+                    s = new CircleShape(x, y);
+                    Shape::push(s);
+                    break;
+                case Shape::S_ELLIPSE:
+                    s = new EllipseShape(x, y);
+                    Shape::push(s);
+                    break;
+                case Shape::S_FILL:
+                    s = new FillShape(x, y);
+                    Shape::push(s);
+                    s->draw();
+                    break;
+                case Shape::S_CUT:
+                    if (mouseActive == -1) {
+                        s = new CutShape(x, y);
+                        Shape::push(s);
+                    } else if (mouseActive == Shape::S_CUT) {
+                        s = Shape::getLastShape();
+                        if (s && s->getType() == Shape::S_CUT) {
+                            ((CutShape *) s)->updateVertex2(x, y);
+                            s->draw();
+                            win.display();
+                        }
+                        mouseActive = -1;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            mouseActive = Shape::getCurType();
+        } else {
+            mouseUp = true;
+            s = Shape::getLastShape();
+            if (s) {
+                if (mouseActive != Shape::S_POLYGON && mouseActive != Shape::S_CUT)
+                    mouseActive = -1;
+            }
+        }
+    } else {
+        if (mouseActive == Shape::S_POLYGON) {
+            s = Shape::getLastShape();
+            if (s) {
+                ((PolygonShape *) s)->setComplete();
+                s->draw();
+            }
+            glutAttachMenu(GLUT_RIGHT_BUTTON);
+        }
+        mouseActive = -1;
+    }
+    win.flush();
 }
 
-void mouseClick(int button, int state, int x, int y) {
-    if (button != GLUT_LEFT_BUTTON)
+void mouseMotionFunc(int x, int y) {
+    if (mouseActive == -1)
         return;
-    if (state != GLUT_DOWN)
-        return;
-    switch (shape) {
-        case SPOINT:
-            casePoint(x, y);
-            addPoint(tmp_point);
+    Shape *s = Shape::getLastShape();
+    if (!s || s->getType() != Shape::getCurType()) return;
+    switch (Shape::getCurType()) {
+        case Shape::S_ERASER:
+            ((EraserShape *) s)->addVertex(x, y);
+            s->drawLast();
             break;
-        case THREAD:
-            tmp_thread.color = color;
-            if (cnt_thread % 2 == 0) {
-                tmp_thread.x1 = x;
-                tmp_thread.y1 = y;
-                casePoint(x, y);
-            } else {
-                tmp_thread.x2 = x;
-                tmp_thread.y2 = y;
-                addThread(tmp_thread);
-                drawThread(tmp_thread);
-            }
-            ++cnt_thread;
+        case Shape::S_POINT:
+            ((CurveShape *) s)->addVertex(x, y);
+            s->drawLast();
             break;
-        case TRIANGLE:
-            tmp_triangle.color = color;
-            if (cnt_triangle % 3 == 0) {
-                tmp_triangle.x1 = x;
-                tmp_triangle.y1 = y;
-                casePoint(x, y);
-            } else if (cnt_triangle % 3 == 1) {
-                tmp_triangle.x2 = x;
-                tmp_triangle.y2 = y;
-                tmp_thread.x1 = tmp_triangle.x1;
-                tmp_thread.y1 = tmp_triangle.y1;
-                tmp_thread.x2 = x;
-                tmp_thread.y2 = y;
-                tmp_thread.color = color;
-                drawThread(tmp_thread);
-            } else {
-                tmp_triangle.x3 = x;
-                tmp_triangle.y3 = y;
-                drawTriangle(tmp_triangle);
-                addTriangle(tmp_triangle);
+        case Shape::S_ERASER_TOTAL:
+            if (((EraserTotalShape *) s)->addErasePos(x, y)) {
+                s->drawLast();
+                win.display();
             }
-            ++cnt_triangle;
             break;
-        case RECTANGLE:
-            tmp_rectangle.color = color;
-            if (cnt_rectangle % 2 == 0) {
-                tmp_rectangle.x1 = x;
-                tmp_rectangle.y1 = y;
-                casePoint(x, y);
-            } else {
-                tmp_rectangle.x2 = x;
-                tmp_rectangle.y2 = y;
-                drawRectangle(tmp_rectangle);
-                addRectangle(tmp_rectangle);
-            }
-            ++cnt_rectangle;
+        case Shape::S_THREAD:
+            ((ThreadShape *) s)->updateVertex2(x, y);
+            s->drawLast();
+            win.display();
             break;
-        case CIRCLE:
-            tmp_circle.color = color;
-            if (cnt_circle % 2 == 0) {
-                tmp_circle.x = x;
-                tmp_circle.y = y;
-                casePoint(x, y);
-            } else {
-                x -= tmp_circle.x;
-                y -= tmp_circle.y;
-                tmp_circle.r = sqrt(x * x + y * y);
-                drawCircle(tmp_circle);
-                addCircle(tmp_circle);
-            }
-            ++cnt_circle;
+        case Shape::S_POLYGON:
+            if (mouseUp)
+                ((PolygonShape *) s)->addVertex(x, y);
+            else
+                ((PolygonShape *) s)->updateLastVertex(x, y);
+            s->drawLast();
+            win.display();
+            break;
+        case Shape::S_CIRCLE:
+            ((CircleShape *) s)->updateR(x, y);
+            s->drawLast();
+            win.display();
+            break;
+        case Shape::S_ELLIPSE:
+            ((EllipseShape *) s)->updateVertex2(x, y);
+            s->drawLast();
+            win.display();
+            break;
+        default:
             break;
     }
-    glFlush();
+    win.flush();
 }

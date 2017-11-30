@@ -1,42 +1,17 @@
 #ifndef CG_DRAW_H
 #define CG_DRAW_H
 
-void clearAll();
+class Draw {
+public:
+    static void point(int x, int y);
 
-void addPoint(const struct point &s);
+    static void line(int x1, int y1, int x2, int y2);
 
-void addThread(const struct thread &s);
+    static void circle(int x, int y, float r);
 
-void addTriangle(const struct triangle &s);
+    static void ellipse(int x, int y, int a, int b);
 
-void addRectangle(const struct rectangle &s);
+    static void fill(int x, int y);
 
-void addCircle(const struct circle &s);
-
-void drawPoint(const struct point &s);
-
-void drawThread(const struct thread &s);
-
-void drawTriangle(const struct triangle &s);
-
-void drawRectangle(const struct rectangle &s);
-
-void drawCircle(const struct circle &s);
-
-void drawAllPoints();
-
-void drawAlllThreads();
-
-void drawAllTriangles();
-
-void drawAllRectangles();
-
-void drawAllCircles();
-
-void drawAllShapes();
-
-void load();
-
-void save();
-
+};
 #endif
