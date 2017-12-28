@@ -20,7 +20,9 @@ set(SOURCE_FILES src/main.cpp
         src/mouse.cpp include/mouse.h
         src/shape.cpp include/shape.h
         src/keyboard.cpp include/keyboard.h
-        src/ellipse.cpp include/ellipse.h include/color.h src/color.cpp src/fill.cpp include/fill.h)
+        src/ellipse.cpp include/ellipse.h
+        src/color.cpp include/color.h
+        src/fill.cpp include/fill.h)
 
 add_executable(cg ${SOURCE_FILES})
 target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})

@@ -36,3 +36,7 @@ void Draw::fill(int x, int y) {
     FillAlgo::draw(x, y);
     win.afterDrawPoint();
 }
+
+void Draw::setFillVertice(std::vector<int> &xd, std::vector<int> &yd) {
+    FillAlgo::setFillVertice(xd, yd);
+}

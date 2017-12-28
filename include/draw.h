@@ -1,6 +1,8 @@
 #ifndef CG_DRAW_H
 #define CG_DRAW_H
 
+#include <vector>
+
 class Draw {
 public:
     static void point(int x, int y);
@@ -12,6 +14,8 @@ public:
     static void ellipse(int x, int y, int a, int b);
 
     static void fill(int x, int y);
+
+    static void setFillVertice(std::vector<int> &xd, std::vector<int> &yd);
 
 };
 #endif

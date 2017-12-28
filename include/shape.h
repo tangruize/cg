@@ -440,6 +440,8 @@ public:
 class FillShape : public Shape {
 private:
     int x, y;
+    std::vector<int> xd;
+    std::vector<int> yd;
 
 public:
     FillShape(int px, int py) : Shape(S_FILL), x(px), y(py) {

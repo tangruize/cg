@@ -12,7 +12,7 @@ window win;
 
 void window::init(int argc, char *argv[]) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE);
 
     glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("Computer Graphics Lab");

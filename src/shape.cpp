@@ -249,6 +249,7 @@ void Shape::drawLast() {
 std::vector<Shape *> Shape::shapes;
 
 void FillShape::doDraw() {
+    Draw::setFillVertice(xd, yd);
     Draw::fill(x, y);
 }
 

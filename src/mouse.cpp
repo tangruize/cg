@@ -1,6 +1,7 @@
 #include "shape.h"
 #include "mouse.h"
 #include "window.h"
+#include "menu.h"
 
 static int mouseActive = -1;
 static bool mouseUp = false;
@@ -100,6 +101,7 @@ void mouseClickFunc(int button, int state, int x, int y) {
                 ((PolygonShape *) s)->setComplete();
                 s->draw();
             }
+            glutSetMenu(Menu::getMenuId());
             glutAttachMenu(GLUT_RIGHT_BUTTON);
         }
         mouseActive = -1;

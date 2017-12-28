@@ -6,8 +6,15 @@
 #include "window.h"
 
 static void shapeMenu(GLint opt) {
-    if (Shape::getCurType() == Shape::S_ERASER || Shape::getCurType() == Shape::S_FILL)
-        win.setCursor(0);
+    switch (Shape::getCurType()) {
+        case Shape::S_ERASER:
+        case Shape::S_ERASER_TOTAL:
+        case Shape::S_FILL:
+            win.setCursor(0);
+            break;
+        default:
+            break;
+    }
     Shape::setCurType(opt);
 }
 
@@ -51,6 +58,7 @@ static void editMenu(GLint opt) {
             break;
         case Menu::CLEAR:
             Shape::clearAll();
+            win.display();
             break;
         case Menu::UNDO:
             mouseReset();
@@ -90,16 +98,19 @@ void Menu::initMenu() {
     for (unsigned i = 0; i < NR_MENUS; ++i) {
         glutAddMenuEntry(strMenus[i], i);
     }
-    glutCreateMenu(mainMenu);
+    mainMenuId = glutCreateMenu(mainMenu);
     glutAddSubMenu("Figure", menu1);
     glutAddSubMenu("Color", menu2);
     glutAddSubMenu("Thickness", menu3);
 //    glutAddSubMenu("File", menu4);
     glutAddSubMenu("Eraser", menu5);
     glutAddSubMenu("Edit", menu6);
+    glutSetMenu(mainMenuId);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 const char *const Menu::strMenus[] = {
         "Fill", "Cut", "Clear", "Undo"
 };
+
+int Menu::mainMenuId;
