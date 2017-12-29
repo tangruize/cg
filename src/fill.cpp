@@ -21,7 +21,7 @@ void FillAlgo::floodFill(int x, int y) {
 }
 
 void FillAlgo::doFloodFill(int x, int y) {
-    if (!xp || xp->empty()) {
+//    if (!xp || xp->empty()) {
         int seq, x1, y1;
         stack<int> xd, yd;
         xd.push(x);
@@ -45,11 +45,11 @@ void FillAlgo::doFloodFill(int x, int y) {
                 }
             }
         }
-    } else {
-        for (int i = 0; i < xp->size(); ++i) {
-            win.write((*xp)[i], (*yp)[i]);
-        }
-    }
+//    } else {
+//        for (int i = 0; i < xp->size(); ++i) {
+//            win.write((*xp)[i], (*yp)[i]);
+//        }
+//    }
     xp = yp = NULL;
 }
 

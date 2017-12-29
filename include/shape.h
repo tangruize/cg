@@ -25,7 +25,7 @@ public:
     static const int NR_ERASERS = 2;
     static const char *const strErasers[NR_ERASERS];
     enum SHAPES {
-        S_POINT, S_THREAD, S_POLYGON, S_CIRCLE, S_ELLIPSE, S_ERASER, S_ERASER_TOTAL, S_FILL, S_CUT
+        S_POINT, S_THREAD, S_POLYGON, S_CIRCLE, S_ELLIPSE, S_ERASER, S_ERASER_TOTAL, S_FILL, S_CUT, S_TRANS
     };
     enum THICKS {
         T_SMALL, T_MIDDLE, T_BIG
@@ -46,6 +46,10 @@ public:
     virtual ~Shape() {}
 
     virtual void clear();
+
+    virtual bool getVertex(int i, int &x, int &y) const = 0;
+
+    virtual void setVertex(int i, int x, int y) = 0;
 
     void draw();
 
@@ -160,8 +164,15 @@ public:
         clear();
     }
 
-    void getVertex(int &px, int &py) const {
+    bool getVertex(int i, int &px, int &py) const {
+        if (i != 0) return false;
         px = x, py = y;
+        return true;
+    }
+
+    void setVertex(int i, int px, int py) {
+        if (i != 0) return;
+        x = px, y = py;
     }
 };
 
@@ -181,6 +192,22 @@ public:
 
     virtual ~CurveShape() {
         clear();
+    }
+
+    bool getVertex(int i, int &px, int &py) const {
+        int sz = (int) points.size();
+        if (i < 0 || i >= sz) return false;
+        px = points[i].first;
+        py = points[i].second;
+        return true;
+    }
+
+    void setVertex(int i, int px, int py) {
+        int sz = (int) points.size();
+        if (i < 0 || i >= sz) return;
+        points[i].first = px;
+        points[i].second = py;
+        return;
     }
 
     void addVertex(int x, int y) {
@@ -236,6 +263,14 @@ public:
         clear();
     }
 
+    bool getVertex(int i, int &px, int &py) const {
+        return false;
+    }
+
+    void setVertex(int i, int px, int py) {
+        return;
+    }
+
     bool addErasePos(int x, int y);
 
     void doDraw() {
@@ -276,8 +311,8 @@ public:
     }
 
     ThreadShape(const PointShape &p1, const PointShape &p2) : Shape(S_THREAD) {
-        p1.getVertex(x1, y1);
-        p2.getVertex(x2, y2);
+        p1.getVertex(0, x1, y1);
+        p2.getVertex(0, x2, y2);
     }
 
     ThreadShape(int px1, int py1) :
@@ -287,6 +322,32 @@ public:
 
     ~ThreadShape() {
         clear();
+    }
+
+    bool getVertex(int i, int &px, int &py) const {
+        switch (i) {
+            case 0:
+                px = x1, py = y1;
+                return true;
+            case 1:
+                px = x2, py = y2;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void setVertex(int i, int px, int py) {
+        switch (i) {
+            case 0:
+                x1 = px, y1 = py;
+                break;
+            case 1:
+                x2 = px, y2 = py;
+                break;
+            default:
+                break;
+        }
     }
 
     void doDraw();
@@ -319,14 +380,25 @@ public:
     }
 
     CircleShape(const PointShape &p, float pr) : Shape(S_CIRCLE) {
-        p.getVertex(x, y);
+        p.getVertex(0, x, y);
         r = pr;
+    }
+
+    bool getVertex(int i, int &px, int &py) const {
+        if (i != 0) return false;
+        px = x, py = y;
+        return true;
+    }
+
+    void setVertex(int i, int px, int py) {
+        if (i != 0) return;
+        x = px, y = py;
     }
 
     CircleShape(const PointShape &mid, const PointShape &p) : Shape(S_CIRCLE) {
         int tmpx, tmpy;
-        mid.getVertex(x, y);
-        p.getVertex(tmpx, tmpy);
+        mid.getVertex(0, x, y);
+        p.getVertex(0, tmpx, tmpy);
         tmpx -= x;
         tmpy -= y;
         r = (float) sqrt(tmpx * tmpx + tmpy * tmpy);
@@ -362,6 +434,22 @@ public:
 
     ~PolygonShape() {
         clear();
+    }
+
+    bool getVertex(int i, int &px, int &py) const {
+        int sz = (int) points.size();
+        if (i < 0 || i >= sz) return false;
+        px = points[i].first;
+        py = points[i].second;
+        return true;
+    }
+
+    void setVertex(int i, int px, int py) {
+        int sz = (int) points.size();
+        if (i < 0 || i >= sz) return;
+        points[i].first = px;
+        points[i].second = py;
+        return;
     }
 
     void addVertex(int x, int y) {
@@ -420,6 +508,33 @@ public:
         clear();
     }
 
+    bool getVertex(int i, int &px, int &py) const {
+        switch (i) {
+            case 0:
+                px = x1, py = y1;
+                return true;
+            case 1:
+                px = x2, py = y2;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    void setVertex(int i, int px, int py) {
+        switch (i) {
+            case 0:
+                x1 = px, y1 = py;
+                break;
+            case 1:
+                x2 = px, y2 = py;
+                break;
+            default:
+                break;
+        }
+        ellipseInit();
+    }
+
     void doDraw();
 
     void doDrawLast();
@@ -452,6 +567,17 @@ public:
         clear();
     }
 
+    bool getVertex(int i, int &px, int &py) const {
+        if (i != 0) return false;
+        px = x, py = y;
+        return true;
+    }
+
+    void setVertex(int i, int px, int py) {
+        if (i != 0) return;
+        x = px, y = py;
+    }
+
     void doDraw();
 
     void doDrawLast();
@@ -466,6 +592,14 @@ public:
 
     ~CutShape() {
         clear();
+    }
+
+    bool getVertex(int i, int &px, int &py) const {
+        return false;
+    }
+
+    void setVertex(int i, int px, int py) {
+        return;
     }
 
     void clear();

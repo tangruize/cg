@@ -64,7 +64,7 @@ void PolygonShape::doDraw() {
 void PolygonShape::doDrawLast() {
     if (points.size() < 2) {
         if (points.size() == 1 && nextX >= 0 && nextY >= 0) {
-            points.push_back(std::make_pair(nextX, nextY));
+            points.emplace_back(nextX, nextY);
             nextX = nextY = -1;
         } else {
             return;
@@ -206,7 +206,7 @@ bool EraserTotalShape::addErasePos(int x, int y) {
 }
 
 int Shape::curType = S_POINT;
-int Shape::curThick = T_MIDDLE;
+int Shape::curThick = T_BIG;
 
 const char *const Shape::strShapes[] = {
         "Curve", "Thread", "Polygon", "Circle", "Ellipse"

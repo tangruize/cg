@@ -25,4 +25,4 @@ set(SOURCE_FILES src/main.cpp
         src/fill.cpp include/fill.h)
 
 add_executable(cg ${SOURCE_FILES})
-target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} m)

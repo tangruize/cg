@@ -69,6 +69,12 @@ static void editMenu(GLint opt) {
     }
 }
 
+static void transMenu(GLint opt) {
+    Coordinate::setType(opt);
+    Shape::setCurType(Shape::S_TRANS);
+    mouseReset();
+}
+
 static void mainMenu(GLint opt) {
     win.display();
 }
@@ -98,13 +104,18 @@ void Menu::initMenu() {
     for (unsigned i = 0; i < NR_MENUS; ++i) {
         glutAddMenuEntry(strMenus[i], i);
     }
+    GLint menu7 = glutCreateMenu(transMenu);
+    for (unsigned i = 0; i < Coordinate::NR_TRANS; ++i) {
+        glutAddMenuEntry(Coordinate::strTrans[i], i);
+    }
     mainMenuId = glutCreateMenu(mainMenu);
     glutAddSubMenu("Figure", menu1);
     glutAddSubMenu("Color", menu2);
     glutAddSubMenu("Thickness", menu3);
-//    glutAddSubMenu("File", menu4);
+    glutAddSubMenu("File", menu4);
     glutAddSubMenu("Eraser", menu5);
     glutAddSubMenu("Edit", menu6);
+    glutAddSubMenu("Transform", menu7);
     glutSetMenu(mainMenuId);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }

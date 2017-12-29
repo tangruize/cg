@@ -83,6 +83,7 @@ private:
             if (fillFlag)
                 attr[x][y].fillSeq = fillSeq;
         }
+
         if (attr[x][y].topShape == NULL) {
             float fx, fy;
             Coordinate::coorTrans(x, y, fx, fy);
@@ -159,6 +160,11 @@ public:
         }
     }
 
+    Shape *getShape(int x, int y) {
+        if (!isValid(x, y)) return NULL;
+        return attr[x][y].topShape;
+    }
+
     void write(int x, int y) {
         if (!isValid(x, y)) return;
         for (int i = 0; getThickPoint(x, y, i); ++i) {
@@ -172,7 +178,6 @@ public:
                     if (fillFlag)
                         attr[x][y].fillSeq = fillSeq;
                 }
-
                 float fx, fy;
                 Coordinate::coorTrans(x, y, fx, fy);
                 glVertex2f(fx, fy);

@@ -7,4 +7,5 @@ void mouseMotionFunc(int x, int y);
 
 void mouseReset();
 
+
 #endif

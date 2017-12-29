@@ -36,5 +36,35 @@ void LineAlgo::dda(int x1, int y1, int x2, int y2) {
         }
     }
     win.write(x2, y2);
+}
 
+void LineAlgo::BresenhamLine(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int ux = ((dx > 0) << 1) - 1;
+    int uy = ((dy > 0) << 1) - 1;
+    int x = x1, y = y1, eps;
+
+    eps = 0;
+    dx = abs(dx);
+    dy = abs(dy);
+    if (dx > dy) {
+        for (x = x1; x != x2 + ux; x += ux) {
+            win.write(x, y);
+            eps += dy;
+            if ((eps << 1) >= dx) {
+                y += uy;
+                eps -= dx;
+            }
+        }
+    } else {
+        for (y = y1; y != y2 + uy; y += uy) {
+            win.write(x, y);
+            eps += dx;
+            if ((eps << 1) >= dy) {
+                x += ux;
+                eps -= dy;
+            }
+        }
+    }
 }
