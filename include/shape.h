@@ -16,16 +16,17 @@ private:
     static int curType;
     static int curThick;
     static std::vector<Shape *> shapes;
+    static bool isCurveShape;
 
 public:
-    static const int NR_SHAPES = 5;
+    static const int NR_SHAPES = 6;
     static const char *const strShapes[NR_SHAPES];
     static const int NR_THICKS = 3;
     static const char *const strThicks[NR_THICKS];
     static const int NR_ERASERS = 2;
     static const char *const strErasers[NR_ERASERS];
     enum SHAPES {
-        S_POINT, S_THREAD, S_POLYGON, S_CIRCLE, S_ELLIPSE, S_ERASER, S_ERASER_TOTAL, S_FILL, S_CUT, S_TRANS
+        S_POINT, S_THREAD, S_POLYGON, S_CIRCLE, S_ELLIPSE, S_CURVE, S_ERASER, S_ERASER_TOTAL, S_FILL, S_CUT, S_TRANS
     };
     enum THICKS {
         T_SMALL, T_MIDDLE, T_BIG
@@ -145,6 +146,10 @@ public:
         return NULL;
     }
 
+    static bool isCurve() { return isCurveShape; }
+
+    static void setCurve(int type) { isCurveShape = type == S_CURVE; }
+
 };
 
 class PointShape : public Shape {
@@ -176,21 +181,21 @@ public:
     }
 };
 
-class CurveShape : public Shape {
+class PencilShape : public Shape {
 private:
     std::vector<std::pair<int, int>> points;
 
 protected:
-    CurveShape(int) : Shape(S_ERASER) {}
+    PencilShape(int) : Shape(S_ERASER) {}
 
 public:
-    CurveShape() : Shape(S_POINT) {}
+    PencilShape() : Shape(S_POINT) {}
 
-    CurveShape(int x, int y) : Shape(S_POINT) {
+    PencilShape(int x, int y) : Shape(S_POINT) {
         addVertex(x, y);
     }
 
-    virtual ~CurveShape() {
+    virtual ~PencilShape() {
         clear();
     }
 
@@ -229,13 +234,13 @@ public:
     }
 };
 
-class EraserShape : public CurveShape {
+class EraserShape : public PencilShape {
 public:
-    EraserShape() : CurveShape(0) {
+    EraserShape() : PencilShape(0) {
         setColor(Color::getClearColorIndex());
     }
 
-    EraserShape(int x, int y) : CurveShape(0) {
+    EraserShape(int x, int y) : PencilShape(0) {
         setColor(Color::getClearColorIndex());
         addVertex(x, y);
     }
@@ -421,7 +426,7 @@ public:
 };
 
 class PolygonShape : public Shape {
-private:
+protected:
     std::vector<std::pair<int, int>> points;
     int nextX, nextY;
     bool complete;
@@ -452,8 +457,8 @@ public:
         return;
     }
 
-    void addVertex(int x, int y) {
-        points.push_back(std::make_pair(x, y));
+    virtual void addVertex(int x, int y) {
+        points.emplace_back(x, y);
     }
 
     void setComplete() {
@@ -465,9 +470,9 @@ public:
         nextY = y;
     }
 
-    void doDraw();
+    virtual void doDraw();
 
-    void doDrawLast();
+    virtual void doDrawLast();
 
     int getVertexNum() const { return (int) points.size(); }
 
@@ -479,6 +484,19 @@ public:
         return true;
     }
 };
+
+class CurveShape : public PolygonShape {
+    ~CurveShape() { clear(); }
+    void doDraw();
+    void doDrawLast();
+    void addVertex(int x, int y) {
+        clear();
+        points.emplace_back(x, y);
+        if (points.size() >= 3)
+            std::swap(points[points.size() - 1], points[points.size() - 2]);
+    }
+};
+
 
 class EllipseShape : public Shape {
 private:

@@ -59,7 +59,6 @@ void mouseDownTrans(int x, int y) {
 void mouseMoveTrans(int x, int y) {
     if (srcSet != 2) return;
     if (!transSelectShape) return;
-    win.toggleTmpMode();
     transSelectShape->clear();
     Coordinate::setDest(x, y);
     int px, py;
@@ -78,6 +77,7 @@ void mouseMoveTrans(int x, int y) {
         Coordinate::setSrc(x, y);
         transPoints.clear();
     }
+    win.toggleTmpMode();
     transSelectShape->draw();
     win.toggleTmpMode();
 }
@@ -89,7 +89,7 @@ void mouseClickFunc(int button, int state, int x, int y) {
             mouseUp = false;
             switch (Shape::getCurType()) {
                 case Shape::S_POINT:
-                    s = new CurveShape(x, y);
+                    s = new PencilShape(x, y);
                     Shape::push(s);
                     s->draw();
                     break;
@@ -113,7 +113,10 @@ void mouseClickFunc(int button, int state, int x, int y) {
                     break;
                 case Shape::S_POLYGON:
                     if (mouseActive == -1) {
-                        s = new PolygonShape();
+                        if (Shape::isCurve())
+                            s = new CurveShape();
+                        else
+                            s = new PolygonShape();
                         ((PolygonShape *) s)->addVertex(x, y);
                         Shape::push(s);
                         glutDetachMenu(GLUT_RIGHT_BUTTON);
@@ -200,7 +203,7 @@ void mouseMotionFunc(int x, int y) {
             s->drawLast();
             break;
         case Shape::S_POINT:
-            ((CurveShape *) s)->addVertex(x, y);
+            ((PencilShape *) s)->addVertex(x, y);
             s->drawLast();
             break;
         case Shape::S_ERASER_TOTAL:

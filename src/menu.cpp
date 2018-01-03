@@ -16,6 +16,9 @@ static void shapeMenu(GLint opt) {
             break;
     }
     Shape::setCurType(opt);
+    Shape::setCurve(opt);
+    if (Shape::isCurve())
+        Shape::setCurType(Shape::S_POLYGON);
 }
 
 static void colorMenu(GLint opt) {

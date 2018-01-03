@@ -2,6 +2,7 @@
 #define CG_DRAW_H
 
 #include <vector>
+#include <utility>
 
 class Draw {
 public:
@@ -16,6 +17,8 @@ public:
     static void fill(int x, int y);
 
     static void setFillVertice(std::vector<int> &xd, std::vector<int> &yd);
+
+    static void curve(std::vector<std::pair<int , int>> &vertice);
 
 };
 #endif

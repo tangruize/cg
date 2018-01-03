@@ -22,7 +22,7 @@ set(SOURCE_FILES src/main.cpp
         src/keyboard.cpp include/keyboard.h
         src/ellipse.cpp include/ellipse.h
         src/color.cpp include/color.h
-        src/fill.cpp include/fill.h)
+        src/fill.cpp include/fill.h src/curve.cpp include/curve.h)
 
 add_executable(cg ${SOURCE_FILES})
 target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} m)

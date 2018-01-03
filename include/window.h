@@ -177,10 +177,10 @@ public:
                     attr[x][y].topShape = curShape;
                     if (fillFlag)
                         attr[x][y].fillSeq = fillSeq;
+                    float fx, fy;
+                    Coordinate::coorTrans(x, y, fx, fy);
+                    glVertex2f(fx, fy);
                 }
-                float fx, fy;
-                Coordinate::coorTrans(x, y, fx, fy);
-                glVertex2f(fx, fy);
             }
         }
     }

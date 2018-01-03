@@ -3,6 +3,7 @@
 #include "shape.h"
 #include "fill.h"
 #include "ellipse.h"
+#include "curve.h"
 #include "window.h"
 
 using namespace std;
@@ -39,4 +40,10 @@ void Draw::fill(int x, int y) {
 
 void Draw::setFillVertice(std::vector<int> &xd, std::vector<int> &yd) {
     FillAlgo::setFillVertice(xd, yd);
+}
+
+void Draw::curve(std::vector<std::pair<int, int>> &vertices) {
+    win.beforeDrawPoint();
+    CurveAlgo::draw(vertices);
+    win.afterDrawPoint();
 }

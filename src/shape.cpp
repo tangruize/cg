@@ -43,11 +43,11 @@ void PolygonShape::doDraw() {
             Draw::line(point1.first, point1.second, point2.first, point2.second);
         }
         Draw::line(points.begin()->first, points.begin()->second,
-                   (--points.end())->first, (--points.end())->second);
+                   points.rbegin()->first, points.rbegin()->second);
     } else {
         if (points.size() == 0)
             return;
-        win.toggleTmpMode();
+//        win.toggleTmpMode();
         if (points.size() == 1)
             Draw::point(points[0].first, points[0].second);
         else {
@@ -57,11 +57,12 @@ void PolygonShape::doDraw() {
                 Draw::line(point1.first, point1.second, point2.first, point2.second);
             }
         }
-        win.toggleTmpMode();
+//        win.toggleTmpMode();
     }
 }
 
 void PolygonShape::doDrawLast() {
+    clear();
     if (points.size() < 2) {
         if (points.size() == 1 && nextX >= 0 && nextY >= 0) {
             points.emplace_back(nextX, nextY);
@@ -71,22 +72,24 @@ void PolygonShape::doDrawLast() {
         }
     }
     win.toggleTmpMode();
-    auto it = points.end();
-    auto it1 = --it;
-    auto it2 = --it;
+//    auto it = points.end();
+//    auto it1 = --it;
+//    auto it2 = --it;
+    auto it1 = points.rbegin();
     if (nextX >= 0 && nextY >= 0) {
-        win.toggleEraseMode();
-        Draw::line((*it1).first, (*it1).second, (*it2).first, (*it2).second);
-        win.toggleEraseMode();
+//        win.toggleEraseMode();
+//        Draw::line((*it1).first, (*it1).second, (*it2).first, (*it2).second);
+//        win.toggleEraseMode();
         (*it1).first = nextX;
         (*it1).second = nextY;
         nextX = nextY = -1;
     }
-    Draw::line((*it1).first, (*it1).second, (*it2).first, (*it2).second);
+//    Draw::line((*it1).first, (*it1).second, (*it2).first, (*it2).second);
+    doDraw();
     win.toggleTmpMode();
 }
 
-void CurveShape::doDraw() {
+void PencilShape::doDraw() {
     if (points.size() > 1) {
         pair<int, int> point1, point2;
         for (int i = 0; i < (int) points.size() - 1; ++i) {
@@ -98,7 +101,7 @@ void CurveShape::doDraw() {
         Draw::point(points[0].first, points[0].second);
 }
 
-void CurveShape::doDrawLast() {
+void PencilShape::doDrawLast() {
     if (points.size() > 1) {
         auto it = --points.end(), it2 = it - 1;
         Draw::line(it->first, it->second, it2->first, it2->second);
@@ -163,6 +166,7 @@ void EllipseShape::updateVertex2(int x, int y) {
 
 
 void Shape::clear() {
+    win.toggleTmpMode();
     bool stateChanged = false;
     if (!isEnable)
         stateChanged = isEnable = true;
@@ -174,6 +178,7 @@ void Shape::clear() {
     if (stateChanged)
         isEnable = false;
     color = savedColor;
+    win.toggleTmpMode();
 }
 
 void Shape::drawAll() {
@@ -187,14 +192,14 @@ void Shape::drawAll() {
 void EraserShape::doDraw() {
     win.toggleEraseMode();
     setColor(Color::getClearColorIndex());
-    CurveShape::doDraw();
+    PencilShape::doDraw();
     win.toggleEraseMode();
 }
 
 void EraserShape::doDrawLast() {
     win.toggleEraseMode();
     setColor(Color::getClearColorIndex());
-    CurveShape::doDrawLast();
+    PencilShape::doDrawLast();
     win.toggleEraseMode();
 }
 
@@ -207,9 +212,10 @@ bool EraserTotalShape::addErasePos(int x, int y) {
 
 int Shape::curType = S_POINT;
 int Shape::curThick = T_BIG;
+bool Shape::isCurveShape;
 
 const char *const Shape::strShapes[] = {
-        "Curve", "Thread", "Polygon", "Circle", "Ellipse"
+        "Pencil", "Line", "Polygon", "Circle", "Ellipse", "Curve"
 };
 
 const char *const Shape::strThicks[] = {
@@ -280,4 +286,40 @@ void CutShape::doDrawLast() {
 
 void CutShape::updateVertex2(int x, int y) {
     width = x, height = y;
+}
+
+void CurveShape::doDraw() {
+    if (points.size() < 2) return;
+    else if (points.size() == 2)
+        Draw::line(points.begin()->first, points.begin()->second,
+                   points.rbegin()->first, points.rbegin()->second);
+    else {
+        Draw::curve(points);
+    }
+}
+
+void CurveShape::doDrawLast() {
+    clear();
+    if (points.size() < 2) {
+        if (points.size() == 1 && nextX >= 0 && nextY >= 0) {
+            points.emplace_back(nextX, nextY);
+            nextX = nextY = -1;
+        } else {
+            return;
+        }
+    }
+    if (nextX >= 0 && nextY >= 0) {
+        if (points.size() <= 2) {
+            points[points.size() - 1].first = nextX;
+            points[points.size() - 1].second = nextY;
+        }
+        else {
+            points[points.size() - 2].first = nextX;
+            points[points.size() - 2].second = nextY;
+        }
+        nextX = nextY = -1;
+    }
+    win.toggleTmpMode();
+    doDraw();
+    win.toggleTmpMode();
 }
