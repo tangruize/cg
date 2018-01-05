@@ -144,7 +144,6 @@ void PolygonShape::cut() {
         src.emplace_back(i);
     points.clear();
     Cut::polygonCut(src, points);
-    int i = 0;
 }
 
 void PolygonShape::save(ostream &out) {
@@ -231,7 +230,7 @@ void PencilShape::save(ostream &out) {
     Shape::save(out);
     int sz = (int)points.size();
     out.WRITE(sz);
-    for (int i = 0; i < points.size(); ++i)
+    for (int i = 0; i < (int)points.size(); ++i)
         out .WRITE( points[i].first) .WRITE( points[i].second);
 }
 
@@ -434,7 +433,7 @@ void EraserTotalShape::save(ostream &out) {
     Shape::save(out);
     int sz = (int)disabledShapes.size();
     out.WRITE(sz) ;
-    for (int i = 0; i < disabledShapes.size(); ++i)
+    for (int i = 0; i < (int)disabledShapes.size(); ++i)
         out.WRITE(shapeDict[disabledShapes[i]]);
 }
 
@@ -554,9 +553,9 @@ void Shape::pop() {
 }
 
 void Shape::erase(int i) {
-    if (i < 0 || i >= shapes.size())
+    if (i < 0 || i >= (int)shapes.size())
         return;
-    if (i == shapes.size())
+    if (i == (int)shapes.size())
         pop();
     else {
         auto it = shapes.begin() + i;

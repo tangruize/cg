@@ -59,7 +59,7 @@ public:
 
     virtual void clear();
 
-    virtual bool getVertex(int i, int &x, int &y) const {};
+    virtual bool getVertex(int i, int &x, int &y) const { return false; };
 
     virtual void setVertex(int i, int x, int y) {};
 
@@ -122,7 +122,7 @@ public:
     static void pop();
 
     static Shape *getShape(int i) {
-        if (i < 0 || i >= shapes.size())
+        if (i < 0 || i >= (int)shapes.size())
             return NULL;
         return shapes[i];
     }
@@ -407,6 +407,11 @@ public:
     PolygonShape() : Shape(S_POLYGON) {
         nextX = nextY = -1;
         complete = false;
+    }
+    PolygonShape(std::vector<std::pair<int, int>> &p): Shape(S_POLYGON) {
+        nextX = nextY = -1;
+        complete = true;
+        points = p;
     }
 
     ~PolygonShape() {

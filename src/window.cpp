@@ -2,6 +2,7 @@
 // Created by tangruize on 17-11-29.
 //
 
+#include "draw.h"
 #include "window.h"
 #include "menu.h"
 #include "mouse.h"
@@ -18,6 +19,7 @@ void window::init(int argc, char *argv[]) {
     glutCreateWindow("Computer Graphics Lab");
 
     glutDisplayFunc(displayFunc);
+    glutReshapeFunc(reshapeFunc);
     glutMouseFunc(mouseClickFunc);
     glutMotionFunc(mouseMotionFunc);
     glutKeyboardFunc(keyboardFunc);
@@ -38,31 +40,46 @@ int window::readFillSeq(int x, int y) {
 void window::drawStrippleLine(int x1, int y1, int x2, int y2, bool isClear) {
     int preColor;
     if (isClear)
+    {
         preColor = setCurColor(Color::C_WHITE);
-    else {
+        int thickness = Shape::getCurThick();
+        Shape::setCurThick(Shape::T_SMALL);
+        bool preTmpMode = tmpDrawFlag, preEraseMode = eraseFlag;
+        tmpDrawFlag = eraseFlag = true;
+        curShape = NULL;
+        Draw::line(x1, y1, x2, y1);
+        Draw::line(x2, y1, x2, y2);
+        Draw::line(x2, y2, x1, y2);
+        Draw::line(x1, y2, x1, y1);
+        tmpDrawFlag = preTmpMode;
+        eraseFlag = preEraseMode;
+        Shape::setCurThick(thickness);
+    }
+    else
+    {
         preColor = setCurColor(Color::C_BLACK);
         glLineStipple(2, 0x5555);
         glEnable(GL_LINE_STIPPLE);
+        glBegin(GL_LINES);
+        float fx1, fy1, fx2, fy2;
+        Coordinate::coorTrans(x1, y1, fx1, fy1);
+        Coordinate::coorTrans(x2, y2, fx2, fy2);
+        glVertex2f(fx1, fy1);
+        glVertex2f(fx2, fy1);
+        glVertex2f(fx2, fy1);
+        glVertex2f(fx2, fy2);
+        glVertex2f(fx2, fy2);
+        glVertex2f(fx1, fy2);
+        glVertex2f(fx1, fy2);
+        glVertex2f(fx1, fy1);
+        glEnd();
+        glDisable(GL_LINE_STIPPLE);
     }
-    glBegin(GL_LINES);
-    float fx1, fy1, fx2, fy2;
-    Coordinate::coorTrans(x1, y1, fx1, fy1);
-    Coordinate::coorTrans(x2, y2, fx2, fy2);
-    glVertex2f(fx1, fy1);
-    glVertex2f(fx2, fy1);
-    glVertex2f(fx2, fy1);
-    glVertex2f(fx2, fy2);
-    glVertex2f(fx2, fy2);
-    glVertex2f(fx1, fy2);
-    glVertex2f(fx1, fy2);
-    glVertex2f(fx1, fy1);
-    glEnd();
-    glDisable(GL_LINE_STIPPLE);
     setCurColor(preColor);
 }
 
-bool window::getThickPoint(int &x, int &y, int seq) {
-    switch (Shape::getCurThick()) {
+bool window::getThickPoint(int &x, int &y, int seq, int thickness) {
+    switch (thickness) {
         case Shape::T_BIG:
             if (seq > 8)
                 return false;
@@ -105,9 +122,8 @@ bool window::getThickPoint(int &x, int &y, int seq) {
             if (seq == 0)
                 return true;
         default:
-            break;
+            return false;
     }
-    return false;
 }
 
 void window::clear(int x, int y) {
@@ -125,21 +141,13 @@ void window::clear(int x, int y) {
 }
 
 window::window(int w, int h) : width(w), height(h) {
-    halfWidth = (float) width / 2;
-    halfHeight = (float) height / 2;
-    attr = new attribute *[width];
-    eraseFlag = false;
-    tmpDrawFlag = false;
-    fillSeq = 0;
-    fillFlag = false;
-    baseX = baseY = 0;
-    for (int i = 0; i < width; ++i)
-        attr[i] = new attribute[height];
+    createWindow();
 }
 
 void window::write(int x, int y) {
     if (!isValid(x, y)) return;
-    for (int i = 0; getThickPoint(x, y, i); ++i) {
+    int thickness = Shape::getCurThick();
+    for (int i = 0; getThickPoint(x, y, i, thickness); ++i) {
         if (!isValid(x, y))
             continue;
         if (eraseFlag)
@@ -185,4 +193,17 @@ void window::setCursor(int mode) {
     } else if (mode == 2) {
         glutSetCursor(GLUT_CURSOR_SPRAY);
     }
+}
+
+void window::createWindow() {
+    halfWidth = (float) width / 2;
+    halfHeight = (float) height / 2;
+    attr = new attribute *[width];
+    eraseFlag = false;
+    tmpDrawFlag = false;
+    fillSeq = 0;
+    fillFlag = false;
+    baseX = baseY = 0;
+    for (int i = 0; i < width; ++i)
+        attr[i] = new attribute[height];
 }

@@ -27,7 +27,7 @@ private:
     Shape *curShape;
     bool eraseFlag, tmpDrawFlag, fillFlag;
 
-    bool getThickPoint(int &x, int &y, int seq);
+    bool getThickPoint(int &x, int &y, int seq, int thickness);
 
     void clear(int x, int y);
 
@@ -35,9 +35,21 @@ public:
     window(int w, int h);
 
     ~window() {
+       destroyWindow();
+    }
+
+    void destroyWindow() {
         for (int i = 0; i < width; ++i)
             delete[] attr[i];
         delete[] attr;
+    }
+
+    void createWindow();
+
+    void createWindow(int w, int h) {
+        width = w;
+        height = h;
+        createWindow();
     }
 
     window() : window(WIDTH, HEIGHT) {}
