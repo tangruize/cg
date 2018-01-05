@@ -138,6 +138,8 @@ void PolygonShape::doDrawLast() {
 }
 
 void PolygonShape::cut() {
+    if (points.size() < 2)
+        return;
     clear();
     vector<Point> src;
     for (auto &i: points)

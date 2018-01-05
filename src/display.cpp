@@ -6,8 +6,9 @@ void displayFunc() {
 }
 
 void reshapeFunc(int w,int h) {
-    glViewport(0,0,(GLsizei)w,(GLsizei)h);
-    win.destroyWindow();
-    win.createWindow(w, h);
-    win.display();
+    win.reshape(w, h);
+}
+
+void subWinDisplayFunc() {
+    win.draw3DHexahedron();
 }

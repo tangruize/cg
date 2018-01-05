@@ -1,3 +1,4 @@
+#include <iostream>
 #include "shape.h"
 #include "mouse.h"
 #include "draw.h"
@@ -82,6 +83,12 @@ static void transMenu(GLint opt) {
 }
 
 static void mainMenu(GLint opt) {
+    if (opt == 0) {
+        if (win.isSubWinCreated())
+            win.destroySubWin();
+        else
+            win.createSubWin();
+    }
     win.display();
 }
 
@@ -122,6 +129,7 @@ void Menu::initMenu() {
     glutAddSubMenu("Eraser", menu5);
     glutAddSubMenu("Edit", menu6);
     glutAddSubMenu("Transform", menu7);
+    glutAddMenuEntry("3D", 0);
     glutSetMenu(mainMenuId);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }

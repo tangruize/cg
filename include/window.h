@@ -8,7 +8,10 @@
 #include <GL/glut.h>
 
 const int WIDTH = 1024;
-const int HEIGHT = 600;
+const int HEIGHT = 576;
+const int SUB_WIDTH = 200;
+const int SUB_HEIGHT = 200;
+
 
 class window {
 private:
@@ -23,7 +26,8 @@ private:
     attribute **attr;
     int width, height;
     int baseX, baseY;
-    float halfWidth, halfHeight;
+    int mainWindow, subWindow;
+    float halfWidth, halfHeight, rtri;
     Shape *curShape;
     bool eraseFlag, tmpDrawFlag, fillFlag;
 
@@ -46,13 +50,20 @@ public:
 
     void createWindow();
 
+    void createSubWin();
+
+    void reshape(int w, int h);
+
     void createWindow(int w, int h) {
         width = w;
         height = h;
         createWindow();
     }
+    bool isSubWinCreated() {
+        return subWindow != -1;
+    }
 
-    window() : window(WIDTH, HEIGHT) {}
+    window() : window(WIDTH, HEIGHT) { subWindow = -1;}
 
     bool isValid(int x, int y) {
         return !(x < baseX || y < baseY || x >= width || y >= height);
@@ -126,6 +137,9 @@ public:
     }
 
     void drawStrippleLine(int x1, int y1, int x2, int y2, bool isClear = false);
+    void draw3DHexahedron();
+
+    void destroySubWin();
 };
 
 extern class window win;

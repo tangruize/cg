@@ -3,5 +3,6 @@
 
 void displayFunc();
 void reshapeFunc(int w,int h);
+void subWinDisplayFunc();
 
 #endif

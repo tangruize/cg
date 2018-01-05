@@ -13,10 +13,9 @@ window win;
 
 void window::init(int argc, char *argv[]) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE);
-
+    glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE | GLUT_DEPTH);
     glutInitWindowSize(WIDTH, HEIGHT);
-    glutCreateWindow("Computer Graphics Lab");
+    mainWindow = glutCreateWindow("Computer Graphics Lab");
 
     glutDisplayFunc(displayFunc);
     glutReshapeFunc(reshapeFunc);
@@ -142,6 +141,7 @@ void window::clear(int x, int y) {
 
 window::window(int w, int h) : width(w), height(h) {
     createWindow();
+    subWindow = -1;
 }
 
 void window::write(int x, int y) {
@@ -206,4 +206,68 @@ void window::createWindow() {
     baseX = baseY = 0;
     for (int i = 0; i < width; ++i)
         attr[i] = new attribute[height];
+}
+
+void window::draw3DHexahedron() {
+    glutSetWindow(subWindow);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    glTranslatef(0.0f,0.0f,-3.0f);
+    glRotatef(rtri, 0.0f, 1.0f, 0.0f);
+
+    glPushMatrix();
+    {
+        glTranslatef(0.0f, 0.0f, -3.0f);
+        glColor4fv(Color::rgbaColors[Color::C_RED]);
+        glutSolidTorus(0.3, 0.7, 30, 30);
+    }
+    glPopMatrix();
+
+    glTranslatef(2, 0, 0);
+    glColor4fv(Color::rgbaColors[Color::C_CYAN]);
+    glRotatef(30, 1, 0, 0);
+    glutWireCube(2.0);
+    rtri += 0.05;
+    flush();
+    glutSetWindow(mainWindow);
+}
+
+void window::createSubWin() {
+    if ((subWindow != -1) || (SUB_WIDTH >= width && SUB_HEIGHT >= height))
+        return;
+    subWindow = glutCreateSubWindow(mainWindow, 0, 0, SUB_WIDTH, SUB_HEIGHT);
+    glutSetWindow(subWindow);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH,GL_NICEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);;
+    glutIdleFunc(subWinDisplayFunc);
+    initColor();
+    glViewport(0, 0, (GLsizei) SUB_WIDTH, (GLsizei) SUB_HEIGHT);
+    glMatrixMode (GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (GLfloat) SUB_WIDTH/(GLfloat) SUB_HEIGHT, 1.0, 100.0);
+    gluLookAt(0, 0, 5, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glutSetWindow(mainWindow);
+}
+
+void window::destroySubWin() {
+    glutIdleFunc(NULL);
+    glutDestroyWindow(subWindow);
+    subWindow = -1;
+}
+
+void window::reshape(int w, int h) {
+    glViewport(0,0,(GLsizei)w,(GLsizei)h);
+    destroyWindow();
+    createWindow(w, h);
+    if (isSubWinCreated()) {
+        destroySubWin();
+        createSubWin();
+    }
+    display();
 }

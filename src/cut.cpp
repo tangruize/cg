@@ -196,6 +196,8 @@ static Point crossPoint(const Point &p1, const Point &p2, const int mode) {
 }
 
 static void doPolygonCut(vector<Point> &src, vector<Point> &target, const int mode) {
+    if (src.empty())
+        return;
     for (auto pl = src.begin(); pl != src.end(); ++pl) {
         auto pr = pl + 1;
         if (pr == src.end())
@@ -235,6 +237,9 @@ void Cut::polygonCut(vector<Point> &src, vector<point> &result) {
     doPolygonCut(pBottom, pResult, TOP);
     for (auto &i: pResult)
         result.emplace_back(i.x, i.y);
+    if (pResult.empty())
+        for (auto &i: src)
+            result.emplace_back(i.x, i.y);
 }
 
 static bool checkArea(int x, int y) {
