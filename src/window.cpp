@@ -17,15 +17,14 @@ void window::init(int argc, char *argv[]) {
     glutInitWindowSize(WIDTH, HEIGHT);
     mainWindow = glutCreateWindow("Computer Graphics Lab");
 
-    glutDisplayFunc(displayFunc);
-    glutReshapeFunc(reshapeFunc);
-    glutMouseFunc(mouseClickFunc);
-    glutMotionFunc(mouseMotionFunc);
-    glutKeyboardFunc(keyboardFunc);
+    glutDisplayFunc(&displayFunc);
+    glutReshapeFunc(&reshapeFunc);
+    glutMouseFunc(&mouseClickFunc);
+    glutMotionFunc(&mouseMotionFunc);
+    glutKeyboardFunc(&keyboardFunc);
 
     Menu::initMenu();
     initColor();
-
     glutMainLoop();
 }
 
@@ -243,7 +242,8 @@ void window::createSubWin() {
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH,GL_NICEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);;
-    glutIdleFunc(subWinDisplayFunc);
+    glutIdleFunc(&subWinDisplayFunc);
+    glutDisplayFunc(&subWinDisplayFunc);
     initColor();
     glViewport(0, 0, (GLsizei) SUB_WIDTH, (GLsizei) SUB_HEIGHT);
     glMatrixMode (GL_PROJECTION);

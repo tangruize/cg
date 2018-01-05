@@ -5,6 +5,10 @@
 #include "shape.h"
 #include "coordinate.h"
 
+#pragma comment (lib, "opengl32.lib")
+#pragma comment (lib, "glut32.lib")
+#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+
 #include <GL/glut.h>
 
 const int WIDTH = 1024;
@@ -39,7 +43,7 @@ public:
     window(int w, int h);
 
     ~window() {
-       destroyWindow();
+        destroyWindow();
     }
 
     void destroyWindow() {

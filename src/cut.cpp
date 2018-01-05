@@ -20,6 +20,14 @@ static const unsigned char TOP_CODE    = 010;
 
 static int x_min, x_max, y_min, y_max;
 
+static inline int min(int i, int j) {
+    return i < j ? i : j;
+}
+
+static inline int max(int i, int j) {
+    return i > j ? i : j;
+}
+
 void horizontal(int x, int y, int end) {
     while (y <= end) {
         Shape *s = win.read(x, y);
