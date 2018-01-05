@@ -6,6 +6,12 @@
 #include <vector>
 #include <utility>
 #include <cmath>
+#include <fstream>
+#include <map>
+
+using namespace std;
+#define WRITE(x) write(reinterpret_cast<const char*>(&x), sizeof x)
+#define READ(x) read(reinterpret_cast<char*>(&x), sizeof x)
 
 class Shape {
 private:
@@ -15,10 +21,11 @@ private:
     bool isEnable;
     static int curType;
     static int curThick;
-    static std::vector<Shape *> shapes;
     static bool isCurveShape;
 
 public:
+    static map<Shape *, int> shapeDict;
+    static std::vector<Shape *> shapes;
     static const int NR_SHAPES = 6;
     static const char *const strShapes[NR_SHAPES];
     static const int NR_THICKS = 3;
@@ -33,9 +40,13 @@ public:
     };
 
 protected:
-    virtual void doDraw() = 0;
+    virtual void doDraw() {};
+    virtual void doDrawLast() {};
 
-    virtual void doDrawLast() = 0;
+public:
+    virtual void save(std::ostream &out) {
+        out.WRITE(type).WRITE(color).WRITE(thick).WRITE(isEnable);
+    };
 
 public:
     Shape(int t) : type(t) {
@@ -48,9 +59,11 @@ public:
 
     virtual void clear();
 
-    virtual bool getVertex(int i, int &x, int &y) const = 0;
+    virtual bool getVertex(int i, int &x, int &y) const {};
 
-    virtual void setVertex(int i, int x, int y) = 0;
+    virtual void setVertex(int i, int x, int y) {};
+
+    virtual void cut(int x1, int y1, int x2 , int y2) {};
 
     void draw();
 
@@ -83,6 +96,9 @@ public:
     }
 
 public:
+    Shape(int t, int c, int th, bool ie): type(t), color(c), thick(th), isEnable(ie) {}
+    Shape(Shape *s): type(s->type), color(s->color), thick(s->thick), isEnable(s->isEnable) {}
+    static Shape *getShapeFromStream(istream &in);
     static void drawAll();
 
     static void setCurType(int s) {
@@ -95,18 +111,15 @@ public:
 
     static void clearAll() {
         shapes.clear();
+        shapeDict.clear();
     }
 
     static void push(Shape *s) {
+        shapeDict[s] = (int)shapes.size();
         shapes.push_back(s);
     }
 
-    static void pop() {
-        if (shapes.size()) {
-            delete (*--shapes.end());
-            shapes.pop_back();
-        }
-    }
+    static void pop();
 
     static Shape *getShape(int i) {
         if (i < 0 || i >= shapes.size())
@@ -114,17 +127,7 @@ public:
         return shapes[i];
     }
 
-    static void erase(int i) {
-        if (i < 0 || i >= shapes.size())
-            return;
-        if (i == shapes.size())
-            pop();
-        else {
-            auto it = shapes.begin() + i;
-            delete (*it);
-            shapes.erase(it);
-        }
-    }
+    static void erase(int i);
 
     static int setCurThick(int t) {
         int preThick = curThick;
@@ -142,7 +145,7 @@ public:
 
     static Shape *getLastShape() {
         if (shapes.size())
-            return *--shapes.end();
+            return *shapes.rbegin();
         return NULL;
     }
 
@@ -156,6 +159,14 @@ class PointShape : public Shape {
 private:
     int x, y;
 
+public:
+    void save(ofstream &out) {
+        Shape::save(out);
+        out.WRITE(x).WRITE(y);
+    }
+    PointShape(Shape *s, istream &is): Shape(s) {
+        is.READ(x).READ(y);
+    }
 public:
     PointShape(int px, int py) : Shape(S_POINT), x(px), y(py) {}
 
@@ -189,7 +200,13 @@ protected:
     PencilShape(int) : Shape(S_ERASER) {}
 
 public:
+    void save(ostream &out);
+    virtual void cut();
+    PencilShape(Shape *s, istream &in);
     PencilShape() : Shape(S_POINT) {}
+    PencilShape(std::vector<std::pair<int, int>> &ps) : Shape(S_POINT) {
+        points = std::move(ps);
+    }
 
     PencilShape(int x, int y) : Shape(S_POINT) {
         addVertex(x, y);
@@ -199,21 +216,9 @@ public:
         clear();
     }
 
-    bool getVertex(int i, int &px, int &py) const {
-        int sz = (int) points.size();
-        if (i < 0 || i >= sz) return false;
-        px = points[i].first;
-        py = points[i].second;
-        return true;
-    }
+    bool getVertex(int i, int &px, int &py) const;
 
-    void setVertex(int i, int px, int py) {
-        int sz = (int) points.size();
-        if (i < 0 || i >= sz) return;
-        points[i].first = px;
-        points[i].second = py;
-        return;
-    }
+    void setVertex(int i, int px, int py);
 
     void addVertex(int x, int y) {
         points.push_back(std::make_pair(x, y));
@@ -225,13 +230,7 @@ public:
 
     int getVertexNum() const { return (int) points.size(); }
 
-    bool getVertex(int n, int &x, int &y) {
-        if (n >= getVertexNum())
-            return false;
-        x = points[n].first;
-        y = points[n].second;
-        return true;
-    }
+    bool getVertex(int n, int &x, int &y);
 };
 
 class EraserShape : public PencilShape {
@@ -239,11 +238,14 @@ public:
     EraserShape() : PencilShape(0) {
         setColor(Color::getClearColorIndex());
     }
-
+    EraserShape(Shape *s, istream &in): PencilShape(s, in) {
+        setColor(Color::getClearColorIndex());
+    }
     EraserShape(int x, int y) : PencilShape(0) {
         setColor(Color::getClearColorIndex());
         addVertex(x, y);
     }
+    void cut() {}
 
     ~EraserShape() {
         clear();
@@ -258,6 +260,8 @@ class EraserTotalShape : public Shape {
 private:
     std::vector<Shape *> disabledShapes;
 public:
+    void save(ostream &out);
+    EraserTotalShape(Shape *s, istream &in);
     EraserTotalShape() : Shape(S_ERASER_TOTAL) {}
 
     EraserTotalShape(int x, int y) : Shape(S_ERASER_TOTAL) {
@@ -278,29 +282,11 @@ public:
 
     bool addErasePos(int x, int y);
 
-    void doDraw() {
-        for (auto &i: disabledShapes) {
-            if (i->isEnabled()) {
-                i->toggleEnableState();
-            }
-        }
-    }
+    void doDraw();
 
-    void doDrawLast() {
-        if (disabledShapes.size()) {
-            auto it = --disabledShapes.end();
-            if ((*it)->isEnabled())
-                (*it)->toggleEnableState();
-        }
-    }
+    void doDrawLast();
 
-    void clear() {
-        for (auto &i: disabledShapes) {
-            if (i->isEnabled())
-                continue;
-            i->toggleEnableState();
-        }
-    }
+    void clear();
 };
 
 class ThreadShape : public Shape {
@@ -310,6 +296,8 @@ private:
     int nextX2, nextY2;
 
 public:
+    void save(ostream &out);
+    ThreadShape(Shape *s, istream &in);
     ThreadShape(int px1, int py1, int px2, int py2) :
             Shape(S_THREAD), x1(px1), y1(py1), x2(px2), y2(py2) {
         nextX2 = nextY2 = -1;
@@ -329,31 +317,11 @@ public:
         clear();
     }
 
-    bool getVertex(int i, int &px, int &py) const {
-        switch (i) {
-            case 0:
-                px = x1, py = y1;
-                return true;
-            case 1:
-                px = x2, py = y2;
-                return true;
-            default:
-                return false;
-        }
-    }
+    void cut();
 
-    void setVertex(int i, int px, int py) {
-        switch (i) {
-            case 0:
-                x1 = px, y1 = py;
-                break;
-            case 1:
-                x2 = px, y2 = py;
-                break;
-            default:
-                break;
-        }
-    }
+    bool getVertex(int i, int &px, int &py) const;
+
+    void setVertex(int i, int px, int py);
 
     void doDraw();
 
@@ -373,16 +341,20 @@ private:
     float r, nextR;
 
 public:
+    void save(ostream &out) {
+        Shape::save(out);
+        out.WRITE(x).WRITE(y).WRITE(r);
+    }
+    CircleShape(Shape *s, istream &in): Shape(s) {
+        in.READ(x).READ(y).READ(r);
+        nextR = -1;
+    }
+
     CircleShape(int px, int py, float pr) : Shape(S_CIRCLE), x(px), y(py), r(pr) {}
 
     CircleShape(int px, int py) : Shape(S_CIRCLE), x(px), y(py), r(-1) {}
 
-    CircleShape(int px1, int py1, int px2, int py2) : Shape(S_CIRCLE) {
-        x = px1, y = py1;
-        px2 -= px1;
-        py2 -= py1;
-        r = (float) sqrt(px2 * px2 + py2 * py2);
-    }
+    CircleShape(int px1, int py1, int px2, int py2);
 
     CircleShape(const PointShape &p, float pr) : Shape(S_CIRCLE) {
         p.getVertex(0, x, y);
@@ -400,14 +372,7 @@ public:
         x = px, y = py;
     }
 
-    CircleShape(const PointShape &mid, const PointShape &p) : Shape(S_CIRCLE) {
-        int tmpx, tmpy;
-        mid.getVertex(0, x, y);
-        p.getVertex(0, tmpx, tmpy);
-        tmpx -= x;
-        tmpy -= y;
-        r = (float) sqrt(tmpx * tmpx + tmpy * tmpy);
-    }
+    CircleShape(const PointShape &mid, const PointShape &p);
 
     ~CircleShape() {
         clear();
@@ -430,8 +395,15 @@ protected:
     std::vector<std::pair<int, int>> points;
     int nextX, nextY;
     bool complete;
+    PolygonShape(int): Shape(S_CURVE) {
+        nextX = nextY = -1;
+        complete = false;
+    }
 
 public:
+    void save(ostream &out);
+    virtual void cut();
+    PolygonShape(Shape *s, istream &in);
     PolygonShape() : Shape(S_POLYGON) {
         nextX = nextY = -1;
         complete = false;
@@ -441,21 +413,9 @@ public:
         clear();
     }
 
-    bool getVertex(int i, int &px, int &py) const {
-        int sz = (int) points.size();
-        if (i < 0 || i >= sz) return false;
-        px = points[i].first;
-        py = points[i].second;
-        return true;
-    }
+    bool getVertex(int i, int &px, int &py) const;
 
-    void setVertex(int i, int px, int py) {
-        int sz = (int) points.size();
-        if (i < 0 || i >= sz) return;
-        points[i].first = px;
-        points[i].second = py;
-        return;
-    }
+    void setVertex(int i, int px, int py);
 
     virtual void addVertex(int x, int y) {
         points.emplace_back(x, y);
@@ -489,12 +449,12 @@ class CurveShape : public PolygonShape {
     ~CurveShape() { clear(); }
     void doDraw();
     void doDrawLast();
-    void addVertex(int x, int y) {
-        clear();
-        points.emplace_back(x, y);
-        if (points.size() >= 3)
-            std::swap(points[points.size() - 1], points[points.size() - 2]);
-    }
+    void addVertex(int x, int y);
+
+public:
+    CurveShape(): PolygonShape(0) {}
+    CurveShape(Shape *s, istream &in): PolygonShape(s, in) {}
+    void cut() {}
 };
 
 
@@ -504,18 +464,15 @@ private:
     int midx, midy, a, b;
     int nextX2, nextY2;
 
-    void ellipseInit() {
-        midx = (x1 + x2) / 2, midy = (y1 + y2) / 2;
-        a = abs(x1 - x2) / 2, b = abs(y1 - y2) / 2;
-        nextX2 = nextY2 = -1;
-    }
+    void ellipseInit();
 
 public:
-    EllipseShape(int px1, int py1, int px2, int py2) :
-            Shape(S_ELLIPSE), x1(px1), y1(py1), x2(px2), y2(py2) {
-        nextX2 = nextY2 = -1;
-        ellipseInit();
+    void save(ostream &out) {
+        Shape::save(out);
+        out.WRITE(x1).WRITE(y1).WRITE(x2).WRITE(y2);
     }
+    EllipseShape(Shape *s, istream &in);
+    EllipseShape(int px1, int py1, int px2, int py2);
 
     EllipseShape(int px1, int py1) :
             Shape(S_ELLIPSE), x1(px1), y1(py1), x2(-1), y2(-1) {
@@ -526,32 +483,9 @@ public:
         clear();
     }
 
-    bool getVertex(int i, int &px, int &py) const {
-        switch (i) {
-            case 0:
-                px = x1, py = y1;
-                return true;
-            case 1:
-                px = x2, py = y2;
-                return true;
-            default:
-                return false;
-        }
-    }
+    bool getVertex(int i, int &px, int &py) const;
 
-    void setVertex(int i, int px, int py) {
-        switch (i) {
-            case 0:
-                x1 = px, y1 = py;
-                break;
-            case 1:
-                x2 = px, y2 = py;
-                break;
-            default:
-                break;
-        }
-        ellipseInit();
-    }
+    void setVertex(int i, int px, int py);
 
     void doDraw();
 
@@ -577,6 +511,14 @@ private:
     std::vector<int> yd;
 
 public:
+    void save(ostream &out) {
+        Shape::save(out);
+        out.WRITE(x).WRITE(y);
+    }
+    FillShape(Shape *s, istream &in): Shape(s) {
+        in.READ(x).READ(y);
+        setThick(T_SMALL, false);
+    }
     FillShape(int px, int py) : Shape(S_FILL), x(px), y(py) {
         setThick(T_SMALL, false);
     }
@@ -599,34 +541,6 @@ public:
     void doDraw();
 
     void doDrawLast();
-};
-
-class CutShape : public Shape {
-private:
-    int baseX, baseY, width, height;
-    int preBaseX, preBaseY, preWidth, preHeight;
-public:
-    CutShape(int x, int y);
-
-    ~CutShape() {
-        clear();
-    }
-
-    bool getVertex(int i, int &px, int &py) const {
-        return false;
-    }
-
-    void setVertex(int i, int px, int py) {
-        return;
-    }
-
-    void clear();
-
-    void doDraw();
-
-    void doDrawLast();
-
-    void updateVertex2(int x, int y);
 };
 
 #endif

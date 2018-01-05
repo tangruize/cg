@@ -2,6 +2,7 @@
 #define CG_FILE_H
 
 #include <string>
+#include <utility>
 
 #define FILE_NAME "cg_saved.data"
 
@@ -15,7 +16,7 @@ public:
         SAVE, LOAD
     };
 
-    File(const std::string &n) : name(n) {}
+    explicit File(std::string n) : name(std::move(n)) {}
 
     File() : File(FILE_NAME) {}
 

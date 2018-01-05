@@ -6,19 +6,21 @@
 #include "window.h"
 
 static void shapeMenu(GLint opt) {
-    switch (Shape::getCurType()) {
-        case Shape::S_ERASER:
-        case Shape::S_ERASER_TOTAL:
-        case Shape::S_FILL:
-            win.setCursor(0);
-            break;
-        default:
-            break;
-    }
+//    switch (Shape::getCurType()) {
+//        case Shape::S_ERASER:
+//        case Shape::S_ERASER_TOTAL:
+//        case Shape::S_FILL:
+//            win.setCursor(0);
+//            break;
+//        default:
+//            break;
+//    }
+    win.setCursor(0);
     Shape::setCurType(opt);
     Shape::setCurve(opt);
     if (Shape::isCurve())
         Shape::setCurType(Shape::S_POLYGON);
+    mouseReset();
 }
 
 static void colorMenu(GLint opt) {
@@ -35,6 +37,7 @@ static void eraserMenu(GLint opt) {
         Shape::setCurType(Shape::S_ERASER_TOTAL);
     else
         Shape::setCurType(Shape::S_ERASER);
+    mouseReset();
 }
 
 static void fileMenu(GLint opt) {
@@ -53,8 +56,8 @@ static void fileMenu(GLint opt) {
 static void editMenu(GLint opt) {
     switch (opt) {
         case Menu::Fill:
-            win.setCursor(2);
             shapeMenu(Shape::S_FILL);
+            win.setCursor(2);
             break;
         case Menu::CUT:
             shapeMenu(Shape::S_CUT);

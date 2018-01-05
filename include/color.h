@@ -27,22 +27,9 @@ public:
 
     static int getClearColorIndex() { return clearColor; }
 
-    static float *setCurColor(int c, int &pre) {
-        pre = curColor;
-        curColor = c;
-        if (c < 0 || c >= NR_COLORS)
-            return getClearColor();
-        return (float *) (rgbaColors[curColor]);
-    }
+    static float *setCurColor(int c, int &pre);
 
-    static float *setClearColor(int c = -1) {
-        if (c == -1)
-            c = clearColor;
-        else if (c < 0 || c >= NR_COLORS)
-            return NULL;
-        clearColor = c;
-        return (float *) (rgbaColors[c]);
-    }
+    static float *setClearColor(int c = -1);
 };
 
 

@@ -2,6 +2,7 @@
 #include "mouse.h"
 #include "window.h"
 #include "menu.h"
+#include "cut.h"
 
 #include <vector>
 #include <utility>
@@ -14,6 +15,9 @@ static bool mouseUp = false;
 static int srcSet = 0;
 static Shape *transSelectShape = NULL;
 static vector<pair<int, int>> transPoints;
+static bool cutState = false;
+
+static int cutx1, cuty1, cutx2, cuty2;
 
 void mouseReset() {
     mouseActive = -1;
@@ -138,22 +142,25 @@ void mouseClickFunc(int button, int state, int x, int y) {
                     Shape::push(s);
                     break;
                 case Shape::S_FILL:
-                    s = new FillShape(x, y);
-                    Shape::push(s);
+                    s = win.read(x, y);
+                    if (s)
+                        s->setColor(Color::getCurColor());
+                    else {
+                        s = new FillShape(x, y);
+                        Shape::push(s);
+                    }
                     s->draw();
                     break;
                 case Shape::S_CUT:
-                    if (mouseActive == -1) {
-                        s = new CutShape(x, y);
-                        Shape::push(s);
-                    } else if (mouseActive == Shape::S_CUT) {
-                        s = Shape::getLastShape();
-                        if (s && s->getType() == Shape::S_CUT) {
-                            ((CutShape *) s)->updateVertex2(x, y);
-                            s->draw();
-                            win.display();
-                        }
-                        mouseActive = -1;
+                    if (!cutState) {
+                        cutx1 = x;
+                        cuty1 = y;
+                        cutState = !cutState;
+                    } else {
+                        cutx2 = x;
+                        cuty2 = y;
+                        win.drawStrippleLine(cutx1, cuty1, cutx2, cuty2);
+                        cutState = !cutState;
                     }
                     break;
                 case Shape::S_TRANS:
@@ -173,6 +180,11 @@ void mouseClickFunc(int button, int state, int x, int y) {
                 }
                 if (mouseActive != Shape::S_POLYGON && mouseActive != Shape::S_CUT)
                     mouseActive = -1;
+            }
+            if (mouseActive == Shape::S_CUT && !cutState) {
+                win.drawStrippleLine(cutx1, cuty1, cutx2, cuty2, true);
+                Cut::cut(cutx1, cuty1, cutx2, cuty2);
+                win.display();
             }
         }
     } else {
@@ -194,8 +206,8 @@ void mouseMotionFunc(int x, int y) {
     if (mouseActive == -1)
         return;
     Shape *s = Shape::getLastShape();
-    if (Shape::getCurType() != Shape::S_TRANS
-        && (!s || s->getType() != Shape::getCurType()))
+    if (Shape::getCurType() != Shape::S_TRANS && Shape::getCurType() != Shape::S_CUT
+        && (!s || (s->getType() != Shape::getCurType() && s->getType() != Shape::S_CURVE)))
         return;
     switch (Shape::getCurType()) {
         case Shape::S_ERASER:
@@ -237,6 +249,15 @@ void mouseMotionFunc(int x, int y) {
             break;
         case Shape::S_TRANS:
             mouseMoveTrans(x, y);
+            break;
+        case Shape::S_CUT:
+            if (!cutState)
+                win.drawStrippleLine(cutx1, cuty1, cutx2, cuty2, true);
+            else
+                cutState = !cutState;
+            cutx2 = x;
+            cuty2 = y;
+            win.drawStrippleLine(cutx1, cuty1, cutx2, cuty2);
             break;
         default:
             break;

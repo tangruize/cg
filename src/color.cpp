@@ -22,3 +22,20 @@ const char *const Color::strColors[] = {
 
 int Color::curColor = C_BLACK;
 int Color::clearColor = C_WHITE;
+
+float *Color::setCurColor(int c, int &pre) {
+    pre = curColor;
+    curColor = c;
+    if (c < 0 || c >= NR_COLORS)
+        return getClearColor();
+    return (float *) (rgbaColors[curColor]);
+}
+
+float *Color::setClearColor(int c) {
+    if (c == -1)
+        c = clearColor;
+    else if (c < 0 || c >= NR_COLORS)
+        return NULL;
+    clearColor = c;
+    return (float *) (rgbaColors[c]);
+}
