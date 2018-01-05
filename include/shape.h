@@ -63,7 +63,7 @@ public:
 
     virtual void setVertex(int i, int x, int y) {};
 
-    virtual void cut(int x1, int y1, int x2 , int y2) {};
+    virtual void cut() {};
 
     void draw();
 

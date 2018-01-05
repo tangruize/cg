@@ -47,7 +47,7 @@ void Cut::cut(int x1, int y1, int x2, int y2) {
     vertical(x_min, y_min, x_max);
     vertical(x_min, y_max, x_max);
     for (auto &s: shapeSet) {
-        s->cut(x1, y1, x2, y2);
+        s->cut();
     }
 }
 
