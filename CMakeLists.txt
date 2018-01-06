@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.6)
 project(cg)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas")
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+if (CMAKE_COMPILER_IS_GNUCXX)
+    add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas)
+endif ()
+
 include_directories(include)
 
 find_package(OpenGL REQUIRED)
@@ -22,7 +26,9 @@ set(SOURCE_FILES src/main.cpp
         src/keyboard.cpp include/keyboard.h
         src/ellipse.cpp include/ellipse.h
         src/color.cpp include/color.h
-        src/fill.cpp include/fill.h src/curve.cpp include/curve.h src/cut.cpp include/cut.h)
+        src/fill.cpp include/fill.h
+        src/curve.cpp include/curve.h
+        src/cut.cpp include/cut.h)
 
 add_executable(cg ${SOURCE_FILES})
-target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} m)
+target_link_libraries(cg ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
