@@ -26,7 +26,7 @@ public:
 
     void save();
 
-    void load();
+    void load(bool noError = false);
 };
 
 extern class File file;

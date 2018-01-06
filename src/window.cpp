@@ -2,6 +2,7 @@
 // Created by tangruize on 17-11-29.
 //
 
+#include "file.h"
 #include "draw.h"
 #include "window.h"
 #include "menu.h"
@@ -12,8 +13,16 @@
 window win;
 
 void window::init(int argc, char *argv[]) {
+    if (argc > 1) {
+        file.setFile(argv[1]);
+        file.load(true);
+    }
     glutInit(&argc, argv);
+#ifdef __linux
     glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE | GLUT_DEPTH);
+#else
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+#endif
     glutInitWindowSize(WIDTH, HEIGHT);
     mainWindow = glutCreateWindow("Computer Graphics Lab");
 

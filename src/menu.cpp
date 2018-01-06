@@ -6,16 +6,7 @@
 #include "file.h"
 #include "window.h"
 
-static void shapeMenu(GLint opt) {
-//    switch (Shape::getCurType()) {
-//        case Shape::S_ERASER:
-//        case Shape::S_ERASER_TOTAL:
-//        case Shape::S_FILL:
-//            win.setCursor(0);
-//            break;
-//        default:
-//            break;
-//    }
+void shapeMenu(int opt) {
     win.setCursor(0);
     Shape::setCurType(opt);
     Shape::setCurve(opt);
@@ -24,15 +15,15 @@ static void shapeMenu(GLint opt) {
     mouseReset();
 }
 
-static void colorMenu(GLint opt) {
+void colorMenu(int opt) {
     win.setCurColor(opt);
 }
 
-static void thickMenu(GLint opt) {
+void thickMenu(int opt) {
     Shape::setCurThick(opt);
 }
 
-static void eraserMenu(GLint opt) {
+void eraserMenu(int opt) {
     win.setCursor(1);
     if (opt == 0)
         Shape::setCurType(Shape::S_ERASER_TOTAL);
@@ -41,22 +32,23 @@ static void eraserMenu(GLint opt) {
     mouseReset();
 }
 
-static void fileMenu(GLint opt) {
+void fileMenu(int opt) {
     switch (opt) {
         case File::SAVE:
             file.save();
             break;
         case File::LOAD:
             file.load();
+            win.display();
             break;
         default:
             break;
     }
 }
 
-static void editMenu(GLint opt) {
+void editMenu(int opt) {
     switch (opt) {
-        case Menu::Fill:
+        case Menu::FILL:
             shapeMenu(Shape::S_FILL);
             win.setCursor(2);
             break;
@@ -70,19 +62,20 @@ static void editMenu(GLint opt) {
         case Menu::UNDO:
             mouseReset();
             Shape::pop();
+            win.display();
             break;
         default:
             break;
     }
 }
 
-static void transMenu(GLint opt) {
+void transMenu(int opt) {
     Coordinate::setType(opt);
     Shape::setCurType(Shape::S_TRANS);
     mouseReset();
 }
 
-static void mainMenu(GLint opt) {
+void mainMenu(int opt) {
     if (opt == 0) {
         if (win.isSubWinCreated())
             win.destroySubWin();
@@ -93,31 +86,31 @@ static void mainMenu(GLint opt) {
 }
 
 void Menu::initMenu() {
-    GLint menu1 = glutCreateMenu(shapeMenu);
+    int menu1 = glutCreateMenu(shapeMenu);
     for (unsigned i = 0; i < Shape::NR_SHAPES; ++i) {
         glutAddMenuEntry(Shape::strShapes[i], i);
     }
-    GLint menu2 = glutCreateMenu(colorMenu);
+    int menu2 = glutCreateMenu(colorMenu);
     for (unsigned i = 0; i < Color::NR_COLORS; ++i) {
         glutAddMenuEntry(Color::strColors[i], i);
     }
-    GLint menu3 = glutCreateMenu(thickMenu);
+    int menu3 = glutCreateMenu(thickMenu);
     for (unsigned i = 0; i < Shape::NR_THICKS; ++i) {
         glutAddMenuEntry(Shape::strThicks[i], i);
     }
-    GLint menu4 = glutCreateMenu(fileMenu);
+    int menu4 = glutCreateMenu(fileMenu);
     for (unsigned i = 0; i < File::NR_FILE_OP; ++i) {
         glutAddMenuEntry(File::strFileOp[i], i);
     }
-    GLint menu5 = glutCreateMenu(eraserMenu);
+    int menu5 = glutCreateMenu(eraserMenu);
     for (unsigned i = 0; i < Shape::NR_ERASERS; ++i) {
         glutAddMenuEntry(Shape::strErasers[i], i);
     }
-    GLint menu6 = glutCreateMenu(editMenu);
+    int menu6 = glutCreateMenu(editMenu);
     for (unsigned i = 0; i < NR_MENUS; ++i) {
         glutAddMenuEntry(strMenus[i], i);
     }
-    GLint menu7 = glutCreateMenu(transMenu);
+    int menu7 = glutCreateMenu(transMenu);
     for (unsigned i = 0; i < Coordinate::NR_TRANS; ++i) {
         glutAddMenuEntry(Coordinate::strTrans[i], i);
     }

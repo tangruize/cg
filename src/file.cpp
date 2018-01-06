@@ -19,18 +19,18 @@ void File::save() {
     out.close();
 }
 
-void File::load() {
+void File::load(bool noError) {
     Shape::clearAll();
     ifstream in(name, ios::binary);
     if (!in.is_open()) {
-        cerr << "LOAD: cannot open file \"" << name << "\"" << endl;
+        if (!noError)
+            cerr << "LOAD: cannot open file \"" << name << "\"" << endl;
         return;
     }
     Shape *s;
     while ((s = Shape::getShapeFromStream(in)) != NULL) {
         Shape::push(s);
     }
-    win.display();
 }
 
 class File file;
