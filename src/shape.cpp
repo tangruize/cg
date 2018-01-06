@@ -295,13 +295,6 @@ void CircleShape::updateR(int tmpx, int tmpy) {
         nextR = (float) sqrt(tmpx * tmpx + tmpy * tmpy);
 }
 
-CircleShape::CircleShape(int px1, int py1, int px2, int py2) : Shape(S_CIRCLE) {
-    x = px1, y = py1;
-    px2 -= px1;
-    py2 -= py1;
-    r = (float) sqrt(px2 * px2 + py2 * py2);
-}
-
 CircleShape::CircleShape(const PointShape &mid, const PointShape &p) : Shape(S_CIRCLE) {
     int tmpx, tmpy;
     mid.getVertex(0, x, y);
@@ -309,6 +302,13 @@ CircleShape::CircleShape(const PointShape &mid, const PointShape &p) : Shape(S_C
     tmpx -= x;
     tmpy -= y;
     r = (float) sqrt(tmpx * tmpx + tmpy * tmpy);
+}
+
+void CircleShape::initFromPoints(int px1, int py1, int px2, int py2) {
+    x = px1, y = py1;
+    px2 -= px1;
+    py2 -= py1;
+    r = (float) sqrt(px2 * px2 + py2 * py2);
 }
 
 void EllipseShape::doDraw() {

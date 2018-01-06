@@ -339,6 +339,7 @@ class CircleShape : public Shape {
 private:
     int x, y;
     float r, nextR;
+    void initFromPoints(int px1, int py1, int px2, int py2);
 
 public:
     void save(ostream &out) {
@@ -354,7 +355,9 @@ public:
 
     CircleShape(int px, int py) : Shape(S_CIRCLE), x(px), y(py), r(-1) {}
 
-    CircleShape(int px1, int py1, int px2, int py2);
+    CircleShape(int px1, int py1, int px2, int py2): Shape(S_CIRCLE) {
+        initFromPoints(px1, py1, px2, py2);
+    }
 
     CircleShape(const PointShape &p, float pr) : Shape(S_CIRCLE) {
         p.getVertex(0, x, y);
@@ -362,14 +365,22 @@ public:
     }
 
     bool getVertex(int i, int &px, int &py) const {
-        if (i != 0) return false;
-        px = x, py = y;
+        if (i > 1 || i < 0) return false;
+        px = x;
+        py = y;
+        if (i == 1)
+            px += (int)r;
         return true;
     }
 
     void setVertex(int i, int px, int py) {
-        if (i != 0) return;
-        x = px, y = py;
+        if (i == 0) {
+            x = px;
+            y = py;
+        }
+        else if (i == 1) {
+            initFromPoints(x, y, px, py);
+        }
     }
 
     CircleShape(const PointShape &mid, const PointShape &p);
@@ -498,15 +509,6 @@ public:
 
     void updateVertex2(int x, int y);
 
-    void getVertex(int &px1, int &py1, int &px2, int &py2) const {
-        px1 = x1, py1 = y1;
-        px2 = x2, py2 = y2;
-    }
-
-    void getPara(int &pmidx, int &pmidy, int &pa, int &pb) {
-        pmidx = midx, pmidy = midy;
-        pa = a, pb = b;
-    }
 };
 
 class FillShape : public Shape {

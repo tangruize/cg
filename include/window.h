@@ -87,11 +87,6 @@ public:
 
     void setCursor(int mode);
 
-    Shape *getShape(int x, int y) {
-        if (!isValid(x, y)) return NULL;
-        return attr[x][y].topShape;
-    }
-
     void write(int x, int y);
 
     void setShapePointer(Shape *s) {

@@ -51,7 +51,7 @@ void mouseDownTrans(int x, int y) {
             return;
     }
     if (srcSet == 2) {
-        transSelectShape = win.getShape(x, y);
+        transSelectShape = win.read(x, y);
         if (transSelectShape == NULL) {
             srcSet = 1;
             Coordinate::setSrc(x, y);
