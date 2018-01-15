@@ -25,3 +25,16 @@ make
 # 运行
 预编译了Windows的EXE文件, 在release中可以下载.
 右键弹出菜单选择功能.
+
+# 图集
+![](image/pencil.PNG)
+![](image/line.PNG)
+![](image/circle.PNG)
+![](image/ellipse.PNG)
+![](image/curve.PNG)
+![](image/polygon.PNG)
+![](image/thickness.PNG)
+![](image/before_cut.PNG)
+![](image/after_cut.PNG)
+![](image/before_transform.PNG)
+![](image/after_transform.PNG)
