@@ -4,7 +4,7 @@ project(cg)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 if (CMAKE_COMPILER_IS_GNUCXX)
-    add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas)
+    add_compile_options(-O2 -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas)
 endif ()
 
 include_directories(include)
